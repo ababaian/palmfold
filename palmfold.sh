@@ -158,7 +158,7 @@ for pdbz in $(ls $PDBS/); do
       # PROCESS TM FASTA FILE TO ISOLATE
       # PALMPRINT AND RDRPCORE
       # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
-      #
+      python3 palmgrab.py $OUTNAME palmprint.fa rdrpcore.fa
 
       echo -e "$pdb\t$maxRdRP_model\t$maxRdRP_score\t$maxXdXP_model\t$maxXdXP_score"
 
