@@ -1,5 +1,5 @@
 #!/bin/bash
-# palmgrasp
+# palmfold
 #
 # Structural alignment and scoring against
 # a reference set of palmprint structures
@@ -14,9 +14,9 @@ set -eu
 
 # Usage
 function usage {
-  echo "palmgrasp v $VERSION"
+  echo "palmfold v $VERSION"
   echo ""
-  echo "Usage: ./palmgrasp.sh -p <path_to_palmprint> -d <path_to_test_pdb> -o <output_dir> [OPTIONS]"
+  echo "Usage: ./palmfold.sh -p <path_to_palmprint> -d <path_to_test_pdb> -o <output_dir> [OPTIONS]"
   echo ""
   echo "    -h    Show this help/usage message"
   echo ""
@@ -31,7 +31,7 @@ function usage {
   echo "    TMalign Parameters"
   echo "    -s    TMalign Cut-off threshold for inclusion [0.5]"
   echo ""
-  echo "ex: ./palmgrasp.sh -p ./pol -d ./pdb -o test_run"
+  echo "ex: ./palmfold.sh -p ./pol -d ./pdb -o test_run"
   false
   exit 1
 }
