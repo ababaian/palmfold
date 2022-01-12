@@ -10,7 +10,7 @@ def palmgrab(inputdir, palmout, rdrpout) :
     PfinList = []
     RfinList = []
     # Resulttrunc.append(SeqRecord(Seq(splitseq), id=name))
-    for input in glob.glob('inputdir/tmfa/*.fa') :
+    for input in glob.glob(os.path.join(os.path.join(inputdir,'tmfa'),'*.fa')) :
         seqList = []
         fasta_sequences = SeqIO.parse(open(input), 'fasta')
         for fasta in fasta_sequences:
