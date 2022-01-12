@@ -44,7 +44,7 @@ def palmgrab(inputdir, palmout, rdrpout) :
                               id=input.split('.fa')[0]))
             else:
                 RfinList.append(
-                    SeqRecord(Seq(truncList[0] + seqList[0][find:len(seqList[1] - lind)] + truncList[1]),
+                    SeqRecord(Seq(truncList[0] + seqList[0][find:len(seqList[1]) - lind] + truncList[1]),
                               id=input.split('.fa')[0]))
     
     writeDir = os.path.join(inputdir, 'resfa')
