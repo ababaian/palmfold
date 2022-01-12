@@ -8,10 +8,6 @@ VERSION='0.2.0'
 #
 set -eu
 
-# Dependency
-# - TMalign installed locally and in $PATH
-# - Python3
-
 # Usage
 function usage {
   echo "palmfold v $VERSION"
@@ -78,9 +74,15 @@ fi
 mkdir -p $OUTNAME
 mkdir -p $OUTNAME/pdb_realign
 mkdir -p $OUTNAME/tmfa
+mkdir -p $OUTNAME/fa
+mkdir -p $OUTNAME/fa/pp
+mkdir -p $OUTNAME/fa/rc
 
 # tmp directory
 mkdir -p $OUTNAME/tmp
+
+# Initialize TMalign header output
+echo -e 'PDBchain1\tPDBchain2\tTM1\tTM2\tRMSD\tID1\tID2\tIDali\tL1\tL2\tLali' >> $OUTNAME/$OUTNAME.tm
 
 # Run TMalign against Reference Palmprints
 # =========================================================
@@ -158,7 +160,12 @@ for pdbz in $(ls $PDBS/); do
       # PROCESS TM FASTA FILE TO ISOLATE
       # PALMPRINT AND RDRPCORE
       # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
-      python3 palmgrab.py $OUTNAME palmprint.fa rdrpcore.fa
+      python3 palmgrab.py $OUTNAME/tmfa/$pdb.fa \
+                          $pdb.pp.fa \
+                          $pdb.rc.fa
+
+      mv $pdb.pp.fa $OUTNAME/fa/pp/
+      mv $pdb.rc.fa $OUTNAME/fa/rc/
 
       echo -e "$pdb\t$maxRdRP_model\t$maxRdRP_score\t$maxXdXP_model\t$maxXdXP_score"
 
@@ -171,6 +178,10 @@ for pdbz in $(ls $PDBS/); do
   fi
 
 done
+
+# Create merged fasta outputs
+cat $OUTNAME/fa/pp/* > $OUTNAME/palmprints.fa
+cat $OUTNAME/fa/rc/* > $OUTNAME/rdrpcores.fa
 
 # Clean-up temporary directory
 #rm -rf $OUTNAME/tmp
