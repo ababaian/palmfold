@@ -83,7 +83,7 @@ class PalmStructs:
             # Serch for the max score with rdrp proteins
             for domain in self.rdrps:
                 # Run TM-Align
-                tmalign_cmd = f"TMAlign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
+                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
                 ret_val = subprocess.run(tmalign_cmd.split(" "), stdout=subprocess.PIPE)
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
@@ -98,7 +98,7 @@ class PalmStructs:
             # Serch for the max score with xdxp proteins
             for domain in self.xdxps:
                 # Run TM-Align
-                tmalign_cmd = f"TMAlign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
+                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
                 ret_val = subprocess.run(tmalign_cmd.split(" "), stdout=subprocess.PIPE)
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
@@ -120,10 +120,12 @@ class PalmStructs:
                     subprocess.run(realign_cmd.split(" "), stdout=output)
                 # Get the realign
                 rename(f"{pdb_file}_tmpalign.pdb", f"{pdb_file}_realign.pdb")
-                subprocess.run(['rm', '*_tmpalign*'])
                 # Get the fastas
                 scriptdir = path.dirname(path.realpath(__file__))
-                subprocess.run(['python3', path.join(scriptdir, "palmgrab.py", f"{pdb_file}.tmp", f"{pdb_file}.pp.fa", f"{pdb_file}.rc.fa")])
+                subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{pdb_file}.pp.fa", f"{pdb_file}.rc.fa"])
+                for f in listdir(directory):
+                    if "_tmpalign" in f:
+                        remove(path.join(directory, f))
                 remove(f"{pdb_file}.tmp")
 
 
