@@ -88,7 +88,6 @@ class PalmStructs:
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
-                print("\t".join([str(x) for x in values]), file=out)
                 # Save best scores
                 score = values[3]
                 if score >= max_rdrp_score:
@@ -103,7 +102,6 @@ class PalmStructs:
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
-                print("\t".join([str(x) for x in values]), file=out)
                 # Save best scores
                 score = values[3]
                 if score >= max_xdxp_score:
@@ -127,6 +125,7 @@ class PalmStructs:
                     if "_tmpalign" in f:
                         remove(path.join(directory, f))
                 remove(f"{pdb_file}.tmp")
+                remove(pdb_file)
 
 
 if __name__ == "__main__":
