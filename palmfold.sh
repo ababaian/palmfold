@@ -37,6 +37,7 @@ PALMPRINTS="./pol"
 PDBS="./pdb"
 OUTNAME='' # unset
 CUTOFF="0.5"
+SPATH=$(dirname $(realpath $0))
 
 while getopts p:d:o:s:h FLAG; do
   case $FLAG in
@@ -97,7 +98,6 @@ for pdbz in $(ls $PDBS/); do
 
   pdb=$(echo $pdbz | sed 's/.gz//g' -)  
 
-
   # Input PDB File
   #echo $pdb
 
@@ -123,14 +123,14 @@ for pdbz in $(ls $PDBS/); do
   cat $OUTNAME/tmp/pdb_clean.tm >> $OUTNAME/$OUTNAME.tm
 
   # Isolate Maximum RdRP TMalign Score
-  maxRdRP=$(grep -f pol/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
+  maxRdRP=$(grep -f $PALMPRINTS/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
     | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
     maxRdRP_model=$(echo $maxRdRP | cut -d' ' -f 1)
     maxRdRP_score=$(echo $maxRdRP | cut -d' ' -f 2)
 
   # Isolate Maximum XdXP TMalign Score (NOT RdRP)
-  maxXdXP=$(grep -v -f pol/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
+  maxXdXP=$(grep -v -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
     | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
     maxXdXP_model=$(echo $maxXdXP | cut -d' ' -f 1)
@@ -160,12 +160,12 @@ for pdbz in $(ls $PDBS/); do
       # PROCESS TM FASTA FILE TO ISOLATE
       # PALMPRINT AND RDRPCORE
       # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
-      python3 palmgrab.py $OUTNAME/tmfa/$pdb.fa \
-                          $pdb.pp.fa \
-                          $pdb.rc.fa
+      python3 $SPATH/palmgrab.py $OUTNAME/tmfa/$pdb.fa \
+                          $OUTNAME/tmp/$pdb.pp.fa \
+                          $OUTNAME/tmp/$pdb.rc.fa
 
-      mv $pdb.pp.fa $OUTNAME/fa/pp/
-      mv $pdb.rc.fa $OUTNAME/fa/rc/
+      mv $OUTNAME/tmp/$pdb.pp.fa $OUTNAME/fa/pp/
+      mv $OUTNAME/tmp/$pdb.rc.fa $OUTNAME/fa/rc/
 
       echo -e "$pdb\t$maxRdRP_model\t$maxRdRP_score\t$maxXdXP_model\t$maxXdXP_score"
 
