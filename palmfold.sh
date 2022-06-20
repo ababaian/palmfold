@@ -37,6 +37,7 @@ PALMPRINTS="./pol"
 PDBS="./pdb"
 OUTNAME='' # unset
 CUTOFF="0.5"
+SPATH=$(dirname $(realpath $0))
 
 while getopts p:d:o:s:h FLAG; do
   case $FLAG in
@@ -82,7 +83,10 @@ mkdir -p $OUTNAME/fa/rc
 mkdir -p $OUTNAME/tmp
 
 # Initialize TMalign header output
-echo -e 'PDBchain1\tPDBchain2\tTM1\tTM2\tRMSD\tID1\tID2\tIDali\tL1\tL2\tLali' >> $OUTNAME/$OUTNAME.tm
+if [ -f $OUTNAME/result.tm ]; then
+  echo "Overwriting result files."
+fi
+echo -e 'PDBchain1\tPDBchain2\tTM1\tTM2\tRMSD\tID1\tID2\tIDali\tL1\tL2\tLali' > $OUTNAME/result.tm
 
 # Run TMalign against Reference Palmprints
 # =========================================================
@@ -96,7 +100,6 @@ for pdbz in $(ls $PDBS/); do
   fi
 
   pdb=$(echo $pdbz | sed 's/.gz//g' -)  
-
 
   # Input PDB File
   #echo $pdb
@@ -120,17 +123,17 @@ for pdbz in $(ls $PDBS/); do
   rm $OUTNAME/tmp/pdb_raw.tm
 
   # Append TMalign CSV to output file
-  cat $OUTNAME/tmp/pdb_clean.tm >> $OUTNAME/$OUTNAME.tm
+  cat $OUTNAME/tmp/pdb_clean.tm >> $OUTNAME/result.tm
 
   # Isolate Maximum RdRP TMalign Score
-  maxRdRP=$(grep -f pol/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
+  maxRdRP=$(grep -f $PALMPRINTS/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
     | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
     maxRdRP_model=$(echo $maxRdRP | cut -d' ' -f 1)
     maxRdRP_score=$(echo $maxRdRP | cut -d' ' -f 2)
 
   # Isolate Maximum XdXP TMalign Score (NOT RdRP)
-  maxXdXP=$(grep -v -f pol/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
+  maxXdXP=$(grep -v -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
     | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
     maxXdXP_model=$(echo $maxXdXP | cut -d' ' -f 1)
@@ -160,16 +163,17 @@ for pdbz in $(ls $PDBS/); do
       # PROCESS TM FASTA FILE TO ISOLATE
       # PALMPRINT AND RDRPCORE
       # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
-      python3 palmgrab.py $OUTNAME/tmfa/$pdb.fa \
-                          $pdb.pp.fa \
-                          $pdb.rc.fa
+      python3 $SPATH/palmgrab.py $OUTNAME/tmfa/$pdb.fa \
+                          $OUTNAME/tmp/$pdb.pp.fa \
+                          $OUTNAME/tmp/$pdb.rc.fa
 
-      mv $pdb.pp.fa $OUTNAME/fa/pp/
-      mv $pdb.rc.fa $OUTNAME/fa/rc/
+      mv $OUTNAME/tmp/$pdb.pp.fa $OUTNAME/fa/pp/
+      mv $OUTNAME/tmp/$pdb.rc.fa $OUTNAME/fa/rc/
 
-      echo -e "$pdb\t$maxRdRP_model\t$maxRdRP_score\t$maxXdXP_model\t$maxXdXP_score"
-
+      echo -e "$pdb\tPositive: $maxRdRP_model $maxRdRP_score"
+    else echo -e "$pdb\tNegative: XdXP score is higher"
     fi
+  else echo -e "$pdb\tNegative: Score below cutoff"
   fi
 
   # Recompress, if needed
@@ -180,8 +184,14 @@ for pdbz in $(ls $PDBS/); do
 done
 
 # Create merged fasta outputs
-cat $OUTNAME/fa/pp/* > $OUTNAME/palmprints.fa
-cat $OUTNAME/fa/rc/* > $OUTNAME/rdrpcores.fa
+cat /dev/null > $OUTNAME/palmprints.fa
+cat /dev/null > $OUTNAME/rdrpcores.fa
+ls $OUTNAME/fa/pp/ | while read PP; do
+  cat $OUTNAME/fa/pp/$PP >> $OUTNAME/palmprints.fa
+done
+ls $OUTNAME/fa/rc/ | while read RC; do
+  cat $OUTNAME/fa/rc/$RC >> $OUTNAME/rdrpcores.fa
+done
 
 # Clean-up temporary directory
 #rm -rf $OUTNAME/tmp
