@@ -66,7 +66,7 @@ class PalmStructs:
 
 
     def align(self, directory, name, out_tsv, rdrp_threshold):
-        pdb_file = [file for file in listdir(directory) if file.startswith(name) and file.endswith(".pdb")]
+        pdb_file = [file for file in listdir(directory) if file.startswith(f"{name}_") and file.endswith(".pdb")]
         if len(pdb_file) == 0:
             print(f"No pdb file found for molecule {name}", file=stderr)
             return
