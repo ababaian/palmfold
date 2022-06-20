@@ -74,6 +74,9 @@ fi
 # Initialize workspace
 mkdir -p $OUTNAME
 mkdir -p $OUTNAME/pdb_realign
+mkdir -p $OUTNAME/png_realign
+mkdir -p $OUTNAME/pdb_realign2
+mkdir -p $OUTNAME/png_realign2
 mkdir -p $OUTNAME/tmfa
 mkdir -p $OUTNAME/fa
 mkdir -p $OUTNAME/fa/pp
@@ -97,21 +100,23 @@ for pdbz in $(ls $PDBS/); do
   if [[ $pdbz == *.gz ]]; then
     GZ='TRUE'
     gzip -d $PDBS/$pdbz
+    pdb=$(echo $pdbz | sed 's/.gz//g' -)
+  else
+    pdb=$pdbz
   fi
-
-  pdb=$(echo $pdbz | sed 's/.gz//g' -)  
 
   # Input PDB File
   #echo $pdb
 
   # Iterate through reference palmprint
   for pp in $(ls $PALMPRINTS/palmprint/); do
-
     TMalign -outfmt 2 \
       $PDBS/$pdb \
       $PALMPRINTS/palmprint/$pp \
       >> $OUTNAME/tmp/pdb_raw.tm
   done
+
+  echo DONE SECTION 1
 
   # Clean-up TM output
   grep '.pdb' $OUTNAME/tmp/pdb_raw.tm \
@@ -160,6 +165,14 @@ for pdbz in $(ls $PDBS/); do
 
       mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign/$pdb
 
+      # Render PNG output of PDB
+      sed "s,\$PDBIN,$OUTNAME/pdb_realign/$pdb,g" palmviz.pml \
+        | sed "s,\$PNGOUT,$OUTNAME/png_realign/$pdb.png,g" \
+        > tmp.pml
+
+      pymol -c -Q -r tmp.pml
+      rm tmp.pml
+
       # PROCESS TM FASTA FILE TO ISOLATE
       # PALMPRINT AND RDRPCORE
       # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
@@ -172,8 +185,36 @@ for pdbz in $(ls $PDBS/); do
 
       echo -e "$pdb\tPositive: $maxRdRP_model $maxRdRP_score"
     else echo -e "$pdb\tNegative: XdXP score is higher"
+
+      TMalign -outfmt 1 \
+        $PDBS/$pdb \
+        $PALMPRINTS/palmprint/1hhs_A-cyst.pdb \
+        -o $OUTNAME/tmp/realign \
+        > $OUTNAME/tmfa/$pdb.fa
+
+      mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign2/$pdb
+
+      # Render PNG output of PDB
+      sed "s,\$PDBIN,$OUTNAME/pdb_realign2/$pdb,g" palmviz.pml \
+        | sed "s,\$PNGOUT,$OUTNAME/png_realign2/$pdb.png,g" \
+        > tmp.pml
+
     fi
   else echo -e "$pdb\tNegative: Score below cutoff"
+
+    TMalign -outfmt 1 \
+      $PDBS/$pdb \
+      $PALMPRINTS/palmprint/1hhs_A-cyst.pdb \
+      -o $OUTNAME/tmp/realign \
+      > $OUTNAME/tmfa/$pdb.fa
+
+    mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign2/$pdb
+
+    # Render PNG output of PDB
+    sed "s,\$PDBIN,$OUTNAME/pdb_realign2/$pdb,g" palmviz.pml \
+      | sed "s,\$PNGOUT,$OUTNAME/png_realign2/$pdb.png,g" \
+      > tmp.pml
+
   fi
 
   # Recompress, if needed
