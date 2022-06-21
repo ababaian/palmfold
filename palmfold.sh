@@ -94,97 +94,114 @@ echo -e 'PDBchain1\tPDBchain2\tTM1\tTM2\tRMSD\tID1\tID2\tIDali\tL1\tL2\tLali' > 
 # Run TMalign against Reference Palmprints
 # =========================================================
 for pdbz in $(ls $PDBS/); do
+  if [[ -s $pdbz ]]; then
 
-  # If PDB is gz compressed, decompress in place
-  GZ='FALSE'
-  if [[ $pdbz == *.gz ]]; then
-    GZ='TRUE'
-    gzip -d $PDBS/$pdbz
-    pdb=$(echo $pdbz | sed 's/.gz//g' -)
-  else
-    pdb=$pdbz
-  fi
+    # If PDB is gz compressed, decompress in place
+    GZ='FALSE'
+    if [[ $pdbz == *.gz ]]; then
+      GZ='TRUE'
+      gzip -d $PDBS/$pdbz
+      pdb=$(echo $pdbz | sed 's/.gz//g' -)
+    else
+      pdb=$pdbz
+    fi
 
-  # Input PDB File
-  #echo $pdb
+    # Input PDB File
+    #echo $pdb
 
-  # Iterate through reference palmprint
-  for pp in $(ls $PALMPRINTS/palmprint/); do
-    TMalign -outfmt 2 \
-      $PDBS/$pdb \
-      $PALMPRINTS/palmprint/$pp \
-      >> $OUTNAME/tmp/pdb_raw.tm
-  done
+    # Iterate through reference palmprint
+    for pp in $(ls $PALMPRINTS/palmprint/); do
+      TMalign -outfmt 2 \
+        $PDBS/$pdb \
+        $PALMPRINTS/palmprint/$pp \
+        >> $OUTNAME/tmp/pdb_raw.tm
+    done
 
-  echo DONE SECTION 1
+    echo DONE SECTION 1
 
-  # Clean-up TM output
-  grep '.pdb' $OUTNAME/tmp/pdb_raw.tm \
-   | sed 's/\.pdb//g' - \
-   | sed "s,$PDBS/,,g" - \
-   | sed "s,$PALMPRINTS/palmprint/,,g" - \
-   > $OUTNAME/tmp/pdb_clean.tm
+    # Clean-up TM output
+    grep '.pdb' $OUTNAME/tmp/pdb_raw.tm \
+     | sed 's/\.pdb//g' - \
+     | sed "s,$PDBS/,,g" - \
+     | sed "s,$PALMPRINTS/palmprint/,,g" - \
+     > $OUTNAME/tmp/pdb_clean.tm
 
-  rm $OUTNAME/tmp/pdb_raw.tm
+    rm $OUTNAME/tmp/pdb_raw.tm
 
-  # Append TMalign CSV to output file
-  cat $OUTNAME/tmp/pdb_clean.tm >> $OUTNAME/result.tm
+    # Append TMalign CSV to output file
+    cat $OUTNAME/tmp/pdb_clean.tm >> $OUTNAME/result.tm
 
-  # Isolate Maximum RdRP TMalign Score
-  maxRdRP=$(grep -f $PALMPRINTS/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
-    | cut -f 2,4 | sort -k 2 -nr -| head -n1)
+    # Isolate Maximum RdRP TMalign Score
+    maxRdRP=$(grep -f $PALMPRINTS/rdrp.model.list $OUTNAME/tmp/pdb_clean.tm \
+      | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
-    maxRdRP_model=$(echo $maxRdRP | cut -d' ' -f 1)
-    maxRdRP_score=$(echo $maxRdRP | cut -d' ' -f 2)
+      maxRdRP_model=$(echo $maxRdRP | cut -d' ' -f 1)
+      maxRdRP_score=$(echo $maxRdRP | cut -d' ' -f 2)
 
-  # Isolate Maximum XdXP TMalign Score (NOT RdRP)
-  maxXdXP=$(grep -v -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
-    | cut -f 2,4 | sort -k 2 -nr -| head -n1)
+    # Isolate Maximum XdXP TMalign Score (NOT RdRP)
+    maxXdXP=$(grep -v -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
+      | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
-    maxXdXP_model=$(echo $maxXdXP | cut -d' ' -f 1)
-    maxXdXP_score=$(echo $maxXdXP | cut -d' ' -f 2)
+      maxXdXP_model=$(echo $maxXdXP | cut -d' ' -f 1)
+      maxXdXP_score=$(echo $maxXdXP | cut -d' ' -f 2)
 
-  # Use bc to compare floats
-  # Does maxRdRP_score pass CUTOFF value
-  if [ 1 -eq "$(echo "$maxRdRP_score >= $CUTOFF" | bc)" ]; then
-    
-    # A significant RdRP match is present
-    # Does maxRdRP surpass maxXdXP
-
-    if [ 1 -eq "$(echo "$maxRdRP_score >= $maxXdXP_score" | bc)" ]; then
-      # RdRP Hit is significant and surpasses XdXP
-
-      # Generate Fasta and Re-Align PDB output
-      # against TOP HIT only
+    # Use bc to compare floats
+    # Does maxRdRP_score pass CUTOFF value
+    if [ 1 -eq "$(echo "$maxRdRP_score >= $CUTOFF" | bc)" ]; then
       
-      TMalign -outfmt 1 \
-      $PDBS/$pdb \
-      $PALMPRINTS/palmprint/$maxRdRP_model.pdb \
-      -o $OUTNAME/tmp/realign \
-      > $OUTNAME/tmfa/$pdb.fa
+      # A significant RdRP match is present
+      # Does maxRdRP surpass maxXdXP
 
-      mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign/$pdb
+      if [ 1 -eq "$(echo "$maxRdRP_score >= $maxXdXP_score" | bc)" ]; then
+        # RdRP Hit is significant and surpasses XdXP
 
-      # Render PNG output of PDB
-      sed "s,\$PDBIN,$OUTNAME/pdb_realign/$pdb,g" palmviz.pml \
-        | sed "s,\$PNGOUT,$OUTNAME/png_realign/$pdb.png,g" \
-        > tmp.pml
+        # Generate Fasta and Re-Align PDB output
+        # against TOP HIT only
+        
+        TMalign -outfmt 1 \
+        $PDBS/$pdb \
+        $PALMPRINTS/palmprint/$maxRdRP_model.pdb \
+        -o $OUTNAME/tmp/realign \
+        > $OUTNAME/tmfa/$pdb.fa
 
-      pymol -c -Q -r tmp.pml
-      rm tmp.pml
+        mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign/$pdb
 
-      # PROCESS TM FASTA FILE TO ISOLATE
-      # PALMPRINT AND RDRPCORE
-      # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
-      python3 $SPATH/palmgrab.py $OUTNAME/tmfa/$pdb.fa \
-                          $OUTNAME/tmp/$pdb.pp.fa \
-                          $OUTNAME/tmp/$pdb.rc.fa
+        # Render PNG output of PDB
+        sed "s,\$PDBIN,$OUTNAME/pdb_realign/$pdb,g" palmviz.pml \
+          | sed "s,\$PNGOUT,$OUTNAME/png_realign/$pdb.png,g" \
+          > tmp.pml
 
-      mv $OUTNAME/tmp/$pdb.pp.fa $OUTNAME/fa/pp/
-      mv $OUTNAME/tmp/$pdb.rc.fa $OUTNAME/fa/rc/
+        pymol -c -Q -r tmp.pml
+        rm tmp.pml
 
-      echo -e "$pdb\tPositive: $maxRdRP_model $maxRdRP_score"
-    else echo -e "$pdb\tNegative: XdXP score is higher"
+        # PROCESS TM FASTA FILE TO ISOLATE
+        # PALMPRINT AND RDRPCORE
+        # python3 palmgrab.py -i <input.tm.fa> -p <palmprint.fa> -r <rdrpcore.fa>
+        python3 $SPATH/palmgrab.py $OUTNAME/tmfa/$pdb.fa \
+                            $OUTNAME/tmp/$pdb.pp.fa \
+                            $OUTNAME/tmp/$pdb.rc.fa
+
+        mv $OUTNAME/tmp/$pdb.pp.fa $OUTNAME/fa/pp/
+        mv $OUTNAME/tmp/$pdb.rc.fa $OUTNAME/fa/rc/
+
+        echo -e "$pdb\tPositive: $maxRdRP_model $maxRdRP_score"
+      else echo -e "$pdb\tNegative: XdXP score is higher"
+
+        TMalign -outfmt 1 \
+          $PDBS/$pdb \
+          $PALMPRINTS/palmprint/1hhs_A-cyst.pdb \
+          -o $OUTNAME/tmp/realign \
+          > $OUTNAME/tmfa/$pdb.fa
+
+        mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign2/$pdb
+
+        # Render PNG output of PDB
+        sed "s,\$PDBIN,$OUTNAME/pdb_realign2/$pdb,g" palmviz.pml \
+          | sed "s,\$PNGOUT,$OUTNAME/png_realign2/$pdb.png,g" \
+          > tmp.pml
+
+      fi
+    else echo -e "$pdb\tNegative: Score below cutoff"
 
       TMalign -outfmt 1 \
         $PDBS/$pdb \
@@ -200,28 +217,15 @@ for pdbz in $(ls $PDBS/); do
         > tmp.pml
 
     fi
-  else echo -e "$pdb\tNegative: Score below cutoff"
 
-    TMalign -outfmt 1 \
-      $PDBS/$pdb \
-      $PALMPRINTS/palmprint/1hhs_A-cyst.pdb \
-      -o $OUTNAME/tmp/realign \
-      > $OUTNAME/tmfa/$pdb.fa
+    # Recompress, if needed
+    if [[ "$GZ" = 'TRUE' ]]; then
+      gzip $PDBS/$pdb
+    fi
 
-    mv $OUTNAME/tmp/realign.pdb $OUTNAME/pdb_realign2/$pdb
-
-    # Render PNG output of PDB
-    sed "s,\$PDBIN,$OUTNAME/pdb_realign2/$pdb,g" palmviz.pml \
-      | sed "s,\$PNGOUT,$OUTNAME/png_realign2/$pdb.png,g" \
-      > tmp.pml
-
+  else
+    echo ERROR: $pdbz is empty.
   fi
-
-  # Recompress, if needed
-  if [[ "$GZ" = 'TRUE' ]]; then
-    gzip $PDBS/$pdb
-  fi
-
 done
 
 # Create merged fasta outputs
