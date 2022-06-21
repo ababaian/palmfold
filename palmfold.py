@@ -64,9 +64,8 @@ class PalmStructs:
 
         self.all_domains = self.rdrps + self.xdxps
 
-
     def align(self, directory, name, out_tsv, rdrp_threshold):
-        pdb_file = [file for file in listdir(directory) if file.startswith(name) and file.endswith(".pdb")]
+        pdb_file = [file for file in listdir(directory) if file.startswith(f"{name}_") and file.endswith(".pdb")]
         if len(pdb_file) == 0:
             print(f"No pdb file found for molecule {name}", file=stderr)
             return
@@ -88,6 +87,7 @@ class PalmStructs:
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
+                print("\t".join([str(v) for v in values]), file=out)
                 # Save best scores
                 score = values[3]
                 if score >= max_rdrp_score:
@@ -102,6 +102,7 @@ class PalmStructs:
                 # Parse the output
                 values = ret_val.stdout.decode('utf-8').split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
+                print("\t".join([str(v) for v in values]), file=out)
                 # Save best scores
                 score = values[3]
                 if score >= max_xdxp_score:
