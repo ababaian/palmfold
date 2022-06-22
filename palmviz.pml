@@ -7,25 +7,27 @@
 ## Input parameters to be read from
 ## command-line
 ##
-#pdbin  = '/home/ab/Desktop/palmfold/palmfold_v4/palmdb_pilot/pdb_realign/1685_unrelaxed_rank_1_model_3.pdb_realign.pdb'
-#pngout = '/home/ab/Desktop/palmfold/palmfold_v4/palmdb_pilot/output.png'
+#pdbin = '/home/ab/Desktop/palmfold/palmfold_v4/local2/00-1667.tar.gz.pdb'
+pdbin = $PDBIN
+
+#pngout = '/home/ab/Desktop/palmfold/palmfold_v4/output.png'
+pngout = $PNGOUT
+
 ##
 ## These motif coordinates need to be
 ## adjusted to the input PDB (fold)
 ## taken from the structural alignment
-#Astart = 1
-#Aend   = 12
-#Bstart = 51
-#Bend   = 64
-#Cstart = 79
-#Cend   = 86
+Asrt = 1
+Aend = 12
+Bsrt = 51
+Bend = 64
+Csrt = 79
+Cend = 86
 
 ## Script
 ##
 # Load folded PDB file
-## CHANGE INPUT VARIABLE
-#load /home/ab/Desktop/palmfold/palmfold_v4/palmdb_pilot/pdb_realign/1685_unrelaxed_rank_1_model_3.pdb_realign.pdb
-load $PDBIN
+cmd.load(str(pdbin))
 
 # Set background cartoon
 # to white
@@ -46,9 +48,9 @@ set_view (\
 
 # Create motif selections
 ## CHANGE VARIABLES
-select motifA, resi 1-12
-select motifB, resi 51-64
-select motifC, resi 84-91
+cmd.select("motifA", "resi " + str(Asrt) + "-" + str(Aend))
+cmd.select("motifB", "resi " + str(Bsrt) + "-" + str(Bend))
+cmd.select("motifC", "resi " + str(Csrt) + "-" + str(Cend))
 
 color tv_blue, motifA
 color tv_green, motifB
@@ -56,5 +58,4 @@ color tv_red, motifC
 
 set cartoon_transparency, 0.2
 ## CHANGE OUTPUT VARIABLE
-#png /home/ab/Desktop/palmfold/palmfold_v4/palmdb_pilot/output.png, 10cm, dpi=300, ray=1
-png $PNGOUT, 10cm, dpi=300, ray=1
+cmd.png(str(pngout), "10cm", "10cm", 300, 1)
