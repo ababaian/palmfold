@@ -17,12 +17,9 @@ pngout = $PNGOUT
 ## These motif coordinates need to be
 ## adjusted to the input PDB (fold)
 ## taken from the structural alignment
-Asrt = 1
-Aend = 12
-Bsrt = 51
-Bend = 64
-Csrt = 79
-Cend = 86
+Asrt = 1  # plus 11
+Bsrt = 51 # plus 13
+Csrt = 79 # plus 7
 
 ## Script
 ##
@@ -48,9 +45,9 @@ set_view (\
 
 # Create motif selections
 ## CHANGE VARIABLES
-cmd.select("motifA", "resi " + str(Asrt) + "-" + str(Aend))
-cmd.select("motifB", "resi " + str(Bsrt) + "-" + str(Bend))
-cmd.select("motifC", "resi " + str(Csrt) + "-" + str(Cend))
+cmd.select("motifA", "resi " + str(Asrt) + "-" + str(Asrt+11))
+cmd.select("motifB", "resi " + str(Bsrt) + "-" + str(Bsrt+13))
+cmd.select("motifC", "resi " + str(Csrt) + "-" + str(Csrt+7))
 
 color tv_blue, motifA
 color tv_green, motifB
