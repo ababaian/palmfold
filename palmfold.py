@@ -129,6 +129,22 @@ class PalmStructs:
                 remove(pdb_file)
 
 
+def main(directory, palmprints, threshold):
+    # Verify paths
+    if not path.exists(directory):
+        print(f"No pdb directory found at {directory}", file=stderr)
+        exit(1)
+    # Extract protein names
+    names = [filename[:-4] for filename in listdir(directory) if filename.endswith(".a3m")]
+
+    # Create the Palmprint datastructure
+    ps = PalmStructs(palmprints)
+
+    # Align the proteins
+    for prot in names:
+        ps.align(directory, prot, path.join(directory, f"{prot}.tm"), threshold)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract statistics from a colab splited directory')
     parser.add_argument('--directory', '-d', type=str, default="./pdb", help='Directory where are stored the pdb files to inspect')
@@ -137,16 +153,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Verify paths
-    if not path.exists(args.directory):
-        print(f"No pdb directory found at {args.directory}", file=stderr)
-        exit(1)
-    # Extract protein names
-    names = [filename[:-4] for filename in listdir(args.directory) if filename.endswith(".a3m")]
+    main(args.directory, args.palmprints, args.threshold)
 
-    # Create the Palmprint datastructure
-    ps = PalmStructs(args.palmprints)
-
-    # Align the proteins
-    for prot in names:
-        ps.align(args.directory, prot, path.join(args.directory, f"{prot}.tm"), args.threshold)
+    
