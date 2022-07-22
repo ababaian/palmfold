@@ -39,9 +39,9 @@ class PalmStructs:
                     self.rdrps.append(name)
         # list xdxp
         self.xdxps = []
-        xdxp_filelist = path.join(args.palmprints, "xdxp.model.list")
+        xdxp_filelist = path.join(folder, "xdxp.model.list")
         if not path.exists(xdxp_filelist):
-            print(f"No rdrp list found", file=stderr)
+            print(f"No xdxp list found", file=stderr)
             exit(1)
         with open(xdxp_filelist) as xdxp_fl:
             # Verify each xdxp file tree
