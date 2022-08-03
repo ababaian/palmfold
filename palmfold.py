@@ -83,9 +83,9 @@ class PalmStructs:
             for domain in self.rdrps:
                 # Run TM-Align
                 tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
-                ret_val = subprocess.run(tmalign_cmd.split(" "), stdout=subprocess.PIPE)
+                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=stdout, text=True, close_fds=False)
                 # Parse the output
-                values = ret_val.stdout.decode('utf-8').split("\n")[1]
+                values = ret_val.stdout.split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
                 print("\t".join([str(v) for v in values]), file=out)
                 # Save best scores
@@ -98,9 +98,9 @@ class PalmStructs:
             for domain in self.xdxps:
                 # Run TM-Align
                 tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
-                ret_val = subprocess.run(tmalign_cmd.split(" "), stdout=subprocess.PIPE)
+                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=stdout, text=True, close_fds=False)
                 # Parse the output
-                values = ret_val.stdout.decode('utf-8').split("\n")[1]
+                values = ret_val.stdout.split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
                 print("\t".join([str(v) for v in values]), file=out)
                 # Save best scores
