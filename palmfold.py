@@ -30,7 +30,7 @@ class PalmStructs:
                         print(f"Absent fasta for molecule {name}", file=stderr)
                         continue
                     # verify full sequence
-                    if not path.exists(path.join(folder, "full_length", f"{name}.pdb.gz")):
+                    if not path.exists(path.join(folder, "full_lenght", f"{name}.pdb.gz")):
                         print(f"Absent full length sequence for molecule {name}", file=stderr)
                     # verify pdb struct
                     if not path.exists(path.join(folder, "palmprint", f"{name}.pdb")):
@@ -83,7 +83,7 @@ class PalmStructs:
             for domain in self.rdrps:
                 # Run TM-Align
                 tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
-                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=stdout, text=True, close_fds=False)
+                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=True, text=True, close_fds=False)
                 # Parse the output
                 values = ret_val.stdout.split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
@@ -98,7 +98,7 @@ class PalmStructs:
             for domain in self.xdxps:
                 # Run TM-Align
                 tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
-                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=stdout, text=True, close_fds=False)
+                ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=True, text=True, close_fds=False)
                 # Parse the output
                 values = ret_val.stdout.split("\n")[1]
                 values = [name, domain] + [float(x) for x in values.split("\t")[2:]]
