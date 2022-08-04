@@ -30,7 +30,8 @@ class PalmStructs:
                         print(f"Absent fasta for molecule {name}", file=stderr)
                         continue
                     # verify full sequence
-                    if not path.exists(path.join(folder, "full_lenght", f"{name}.pdb.gz")):
+                    gz = path.join(folder, "full_length", f"{name}.pdb.gz")
+                    if not path.exists(gz):
                         print(f"Absent full length sequence for molecule {name}", file=stderr)
                     # verify pdb struct
                     if not path.exists(path.join(folder, "palmprint", f"{name}.pdb")):
