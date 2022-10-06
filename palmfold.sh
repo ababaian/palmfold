@@ -139,7 +139,7 @@ for pdbz in $(ls $PDBS/); do
       maxRdRP_score=$(echo $maxRdRP | cut -d' ' -f 2)
 
     # Isolate Maximum XdXP TMalign Score (NOT RdRP)
-    maxXdXP=$(grep -v -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
+    maxXdXP=$(grep -f $PALMPRINTS/xdxp.model.list $OUTNAME/tmp/pdb_clean.tm \
       | cut -f 2,4 | sort -k 2 -nr -| head -n1)
 
       maxXdXP_model=$(echo $maxXdXP | cut -d' ' -f 1)
