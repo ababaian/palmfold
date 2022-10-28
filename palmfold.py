@@ -3,7 +3,7 @@ from sys import stderr
 
 import argparse
 import subprocess
-
+import logging as log
 
 class PalmStructs:
 
@@ -134,23 +134,25 @@ class PalmStructs:
 def main(inputpath, palmprints, threshold):
     # Verify Input Path exists
     if not path.exists(inputpath):
-        print(f"The input directory {inputpath} does not exist", file=stderr)
+        log.error("The input directory %s does not exist", inputpath)
         exit(1)
-        
+
     # Extract protein filenames
     # TODO add support for .pdb and .pdb.gz files (gzip compatibility)
     names = [filename[:-4] for filename in listdir(inputpath) if filename.endswith(".pdb")]
     
     # Verify Input Path contains PDB files
     if not names:
-        print(f"Input directory {inputpath} doesn't contain any .pdb files.", file=stderr)
+        log.error("Input directory %s doesn't contain any .pdb files.", inputpath)
         exit(1)
     
     # Create the Palmprint datastructure
+    log.info("Initializing palmfold...")
     ps = PalmStructs(palmprints)
 
     # Classify the input protein structures
     for prot in names:
+        log.info("  Analyzing %s...", prot)
         ps.align(inputpath, prot, path.join(inputpath, f"{prot}.tm"), threshold)
 
 # Help / Argument Parsing =================================
@@ -175,8 +177,17 @@ if __name__ == "__main__":
         '--threshold', '-t', type=float, default=0.5,
         help='Polymerase+ classification threshold for TMAlign. [0.5]'
         )
-
+    parser.add_argument(
+        '--verbose', '-v', action='store_true',
+        help='Print INFO messages, else prints WARN and ERROR only'
+        )
     args = parser.parse_args()
+
+    if args.verbose:
+        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+        log.info("Verbose output.")
+    else:
+        log.basicConfig(format="%(levelname)s: %(message)s")
 
     main(args.inputpath, args.palmprints, args.threshold)
 
