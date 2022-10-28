@@ -55,10 +55,10 @@ class PalmStructs:
             log.error('The "xdxp.model.list" file not found in %s,', polpath)
             exit(1)
 
-        # Check each input RdRp model fasta, full_pdb, and palmprint_pdb
+        # Check each input XdXp model fasta, full_pdb, and palmprint_pdb
         with open(xdxp_filelist) as xdxp_fl:
-            log.info("  Verifying RdRp Model List")
-            # Verify each xdxp file in directory tree
+            log.info("  Verifying XdXp Model List")
+            # Verify each XdXp file in directory tree
             for line in xdxp_fl:
                 line = line.strip()
                 if len(line) > 0:
