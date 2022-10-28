@@ -130,23 +130,30 @@ class PalmStructs:
                 remove(pdb_file)
 
 
-# Main script routine 
+# Main script routine =====================================
 def main(inputpath, palmprints, threshold):
     # Verify Input Path exists
     if not path.exists(inputpath):
         print(f"The input directory {inputpath} does not exist", file=stderr)
         exit(1)
-    # Extract protein names
+        
+    # Extract protein filenames
+    # TODO add support for .pdb and .pdb.gz files (gzip compatibility)
     names = [filename[:-4] for filename in listdir(inputpath) if filename.endswith(".pdb")]
-
+    
+    # Verify Input Path contains PDB files
+    if not names:
+        print(f"Input directory {inputpath} doesn't contain any .pdb files.", file=stderr)
+        exit(1)
+    
     # Create the Palmprint datastructure
     ps = PalmStructs(palmprints)
 
-    # Align the proteins
+    # Classify the input protein structures
     for prot in names:
         ps.align(inputpath, prot, path.join(inputpath, f"{prot}.tm"), threshold)
 
-# Help / Argument Parsing ======================
+# Help / Argument Parsing =================================
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='palmfold: RNA virus RdRp structural classifier.'
