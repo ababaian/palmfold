@@ -203,8 +203,15 @@ class PalmStructs:
                 rename(f"{pdb_file}_tmpalign.pdb", f"{out_rpdb}")
 
                 # Run palmgrab.py to sub-select palmprint/core fasta seq
+                log.info("")
+                log.info("  Run palmgrab.py to extract sub-sequence fasta")
+                log.info("  cmd:")
                 scriptdir = path.dirname(path.realpath(__file__))
+                log.info('  python3 ' + path.join(scriptdir, "palmgrab.py ") + f"{pdb_file}.tmp " + f"{out_ppfa} " + f"{out_rcfa}")
+
                 subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{out_ppfa}", f"{out_rcfa}"])
+                log.info("  done")
+                log.info("")
                 for f in listdir(pdbpath):
                     if "_tmpalign" in f:
                         remove(path.join(pdbpath, f))
