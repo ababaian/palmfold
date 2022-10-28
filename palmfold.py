@@ -66,7 +66,7 @@ class PalmStructs:
         self.all_domains = self.rdrps + self.xdxps
 
     def align(self, directory, name, out_tsv, rdrp_threshold):
-        pdb_file = [file for file in listdir(directory) if file.startswith(f"{name}_") and file.endswith(".pdb")]
+        pdb_file = [file for file in listdir(directory) if file.startswith(f"{name}") and file.endswith(".pdb")]
         if len(pdb_file) == 0:
             print(f"No pdb file found for molecule {name}", file=stderr)
             return
@@ -136,7 +136,7 @@ def main(directory, palmprints, threshold):
         print(f"No pdb directory found at {directory}", file=stderr)
         exit(1)
     # Extract protein names
-    names = [filename[:-4] for filename in listdir(directory) if filename.endswith(".a3m")]
+    names = [filename[:-4] for filename in listdir(directory) if filename.endswith(".pdb")]
 
     # Create the Palmprint datastructure
     ps = PalmStructs(palmprints)
