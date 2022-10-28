@@ -130,30 +130,47 @@ class PalmStructs:
                 remove(pdb_file)
 
 
-def main(directory, palmprints, threshold):
-    # Verify paths
-    if not path.exists(directory):
-        print(f"No pdb directory found at {directory}", file=stderr)
+# Main script routine 
+def main(inputpath, palmprints, threshold):
+    # Verify Input Path exists
+    if not path.exists(inputpath):
+        print(f"The input directory {inputpath} does not exist", file=stderr)
         exit(1)
     # Extract protein names
-    names = [filename[:-4] for filename in listdir(directory) if filename.endswith(".pdb")]
+    names = [filename[:-4] for filename in listdir(inputpath) if filename.endswith(".pdb")]
 
     # Create the Palmprint datastructure
     ps = PalmStructs(palmprints)
 
     # Align the proteins
     for prot in names:
-        ps.align(directory, prot, path.join(directory, f"{prot}.tm"), threshold)
+        ps.align(inputpath, prot, path.join(inputpath, f"{prot}.tm"), threshold)
 
-
+# Help / Argument Parsing ======================
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Extract statistics from a colab splited directory')
-    parser.add_argument('--directory', '-d', type=str, default="./pdb", help='Directory where are stored the pdb files to inspect')
-    parser.add_argument('--palmprints', '-p', type=str, default="./pol", help='Directory where are stored the palmprints')
-    parser.add_argument('--threshold', '-t', type=float, default=0.5, help='Cutoff threshold for TMAlign')
+    parser = argparse.ArgumentParser(
+        description='palmfold: RNA virus RdRp structural classifier.'
+        )
+    parser.add_argument(
+        '--inputpath', '-i', type=str, default='./pdb',
+        help='Directory containing "*.pdb(.gz)"" files to be classified. [./pdb]'
+        )
+    parser.add_argument(
+        '--palmprints', '-p', type=str, default='./pol',
+        help='path to "~/palmfold/pol/" containing palmprint pdb models. [./pol]'
+        )
+    ## TODO: implement output directory
+    parser.add_argument(
+        '--outpath', '-o', type=str, default='./out',
+        help='Output directory into which output files are created. [./out]'
+        )
+    parser.add_argument(
+        '--threshold', '-t', type=float, default=0.5,
+        help='Polymerase+ classification threshold for TMAlign. [0.5]'
+        )
 
     args = parser.parse_args()
 
-    main(args.directory, args.palmprints, args.threshold)
+    main(args.inputpath, args.palmprints, args.threshold)
 
     
