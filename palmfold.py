@@ -46,30 +46,37 @@ class PalmStructs:
                         exit(1)
                     self.rdrps.append(name)
 
+
         # Verify the reference XdXp models and fasta files exist
         self.xdxps = []
         xdxp_filelist = path.join(polpath, "xdxp.model.list")
+
         if not path.exists(xdxp_filelist):
             log.error('The "xdxp.model.list" file not found in %s,', polpath)
-            print(f"No xdxp list found", file=stderr)
             exit(1)
+
+        # Check each input RdRp model fasta, full_pdb, and palmprint_pdb
         with open(xdxp_filelist) as xdxp_fl:
-            # Verify each xdxp file tree
+            log.info("  Verifying RdRp Model List")
+            # Verify each xdxp file in directory tree
             for line in xdxp_fl:
                 line = line.strip()
                 if len(line) > 0:
                     name = line
+                    log.info("    %s", name)
                     # verify fasta
                     if not path.exists(path.join(polpath, "fa", f"{name}.fa")):
-                        print(f"Absent fasta for molecule {name}", file=stderr)
+                        log.warning("Fasta file missing for: %s", name)
                         continue
                     # verify full sequence
-                    if not path.exists(path.join(polpath, "full_length", f"{name}.pdb.gz")):
-                        print(f"Absent full length sequence for molecule {name}", file=stderr)
-                    # verify pdb struct
-                    if not path.exists(path.join(polpath, "palmprint", f"{name}.pdb")):
-                        print(f"Absent palmprint for molecule {name}", file=stderr)
+                    gz = path.join(polpath, "full_length", f"{name}.pdb.gz")
+                    if not path.exists(gz):
+                        log.warning("Full length structure missing for: %s", name)
                         continue
+                    # verify palmprint pdb structucture (required)
+                    if not path.exists(path.join(polpath, "palmprint", f"{name}.pdb")):
+                        log.error("<palmprint>.pdb missing for: %s", name)
+                        exit(1)
                     self.xdxps.append(name)
 
         self.all_domains = self.rdrps + self.xdxps
