@@ -7,41 +7,50 @@ import logging as log
 
 class PalmStructs:
 
-    def __init__(self, folder):
-        if not path.exists(folder):
-            print(f"No palmprint directory found at {folder}", file=stderr)
+    def __init__(self, polpath):
+        # Check if the .pol directory exists
+        if not path.exists(polpath):
+            log.error("The palmprint directory %s does not exist", polpath)
             exit(1)
-        self.folder = folder
+        self.polpath = polpath
         
-        # List rdrps
+        # Verify the reference RdRp models and fasta files exist
         self.rdrps = []
-        rdrp_filelist = path.join(folder, "rdrp.model.list")
+        rdrp_filelist = path.join(polpath, "rdrp.model.list")
+
         if not path.exists(rdrp_filelist):
-            print(f"No rdrp list found", file=stderr)
+            log.error('The "rdrp.model.list" file not found in %s,', polpath)
             exit(1)
+
+        # Check each input RdRp model fasta, full_pdb, and palmprint_pdb
         with open(rdrp_filelist) as rdrp_fl:
-            # Verify each rdrp file tree
+            log.info("  Verifying RdRp Model List")
+            # Verify each rdrp file in directory tree
             for line in rdrp_fl:
                 line = line.strip()
                 if len(line) > 0:
                     name = line
+                    log.info("    %s", name)
                     # verify fasta
-                    if not path.exists(path.join(folder, "fa", f"{name}.fa")):
-                        print(f"Absent fasta for molecule {name}", file=stderr)
+                    if not path.exists(path.join(polpath, "fa", f"{name}.fa")):
+                        log.warning("Fasta file missing for: %s", name)
                         continue
                     # verify full sequence
-                    gz = path.join(folder, "full_length", f"{name}.pdb.gz")
+                    gz = path.join(polpath, "full_length", f"{name}.pdb.gz")
                     if not path.exists(gz):
-                        print(f"Absent full length sequence for molecule {name}", file=stderr)
-                    # verify pdb struct
-                    if not path.exists(path.join(folder, "palmprint", f"{name}.pdb")):
-                        print(f"Absent palmprint for molecule {name}", file=stderr)
+                        log.warning("Full length structure missing for: %s", name)
                         continue
+                    # verify palmprint pdb structucture (required)
+                    if not path.exists(path.join(polpath, "palmprint", f"{name}.pdb")):
+                        log.error("<palmprint>.pdb missing for: %s", name)
+                        exit(1)
                     self.rdrps.append(name)
-        # list xdxp
+
+        # Verify the reference XdXp models and fasta files exist
         self.xdxps = []
-        xdxp_filelist = path.join(folder, "xdxp.model.list")
+        xdxp_filelist = path.join(polpath, "xdxp.model.list")
         if not path.exists(xdxp_filelist):
+            log.error('The "xdxp.model.list" file not found in %s,', polpath)
             print(f"No xdxp list found", file=stderr)
             exit(1)
         with open(xdxp_filelist) as xdxp_fl:
@@ -51,14 +60,14 @@ class PalmStructs:
                 if len(line) > 0:
                     name = line
                     # verify fasta
-                    if not path.exists(path.join(folder, "fa", f"{name}.fa")):
+                    if not path.exists(path.join(polpath, "fa", f"{name}.fa")):
                         print(f"Absent fasta for molecule {name}", file=stderr)
                         continue
                     # verify full sequence
-                    if not path.exists(path.join(folder, "full_length", f"{name}.pdb.gz")):
+                    if not path.exists(path.join(polpath, "full_length", f"{name}.pdb.gz")):
                         print(f"Absent full length sequence for molecule {name}", file=stderr)
                     # verify pdb struct
-                    if not path.exists(path.join(folder, "palmprint", f"{name}.pdb")):
+                    if not path.exists(path.join(polpath, "palmprint", f"{name}.pdb")):
                         print(f"Absent palmprint for molecule {name}", file=stderr)
                         continue
                     self.xdxps.append(name)
@@ -83,7 +92,7 @@ class PalmStructs:
             # Serch for the max score with rdrp proteins
             for domain in self.rdrps:
                 # Run TM-Align
-                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
+                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.polpath, 'palmprint', f'{domain}.pdb')}"
                 ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=True, text=True, close_fds=False)
                 # Parse the output
                 values = ret_val.stdout.split("\n")[1]
@@ -98,7 +107,7 @@ class PalmStructs:
             # Serch for the max score with xdxp proteins
             for domain in self.xdxps:
                 # Run TM-Align
-                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')}"
+                tmalign_cmd = f"TMalign -outfmt 2 {pdb_file} {path.join(self.polpath, 'palmprint', f'{domain}.pdb')}"
                 ret_val = subprocess.run(tmalign_cmd.split(" "), capture_output=True, text=True, close_fds=False)
                 # Parse the output
                 values = ret_val.stdout.split("\n")[1]
@@ -115,7 +124,7 @@ class PalmStructs:
             # Does maxRdRP surpass maxXdXP
             if max_rdrp_score > max_xdxp_score:
                 # Realign the protein with the ref
-                realign_cmd = f"TMalign -outfmt 1 {pdb_file} {path.join(self.folder, 'palmprint', f'{domain}.pdb')} -o {pdb_file}_tmpalign"
+                realign_cmd = f"TMalign -outfmt 1 {pdb_file} {path.join(self.polpath, 'palmprint', f'{domain}.pdb')} -o {pdb_file}_tmpalign"
                 with open(f"{pdb_file}.tmp", "w") as output:
                     subprocess.run(realign_cmd.split(" "), stdout=output)
                 # Get the realign
