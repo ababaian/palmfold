@@ -9,6 +9,8 @@ from sys import stderr
 import argparse
 import subprocess
 import logging as log
+import gzip
+import shutil
 
 class PalmStructs:
 
@@ -236,12 +238,21 @@ def main(inputpath, outpath, palmprints, threshold):
         log.info("Output directory %s exists. Overwriting", outpath)
         
     # Extract protein filenames
-    # TODO add support for .pdb and .pdb.gz files (gzip compatibility)
-    names = [filename[:-4] for filename in listdir(inputpath) if filename.endswith(".pdb")]
-    
+    names = [
+        filename[:-4]
+        for filename in listdir(inputpath)
+        if filename.endswith(".pdb")
+    ]
+
+    namesgz = [
+        filename[:-7]
+        for filename in listdir(inputpath)
+        if filename.endswith(".pdb.gz")
+    ]
+
     # Verify Input Path contains PDB files
-    if not names:
-        log.error("Input directory %s doesn't contain any .pdb files.", inputpath)
+    if not names and namesgz:
+        log.error("Input directory %s doesn't contain any .pdb(.gz) files.", inputpath)
         exit(1)
     
     # Create the Palmprint datastructure
@@ -249,6 +260,16 @@ def main(inputpath, outpath, palmprints, threshold):
     ps = PalmStructs(palmprints)
 
     # Classify the input protein structures
+    for protgz in namesgz:
+        log.info("")
+        log.info("  Analyzing %s...", protgz)
+        # Decompress gz
+        with gzip.open(path.join(inputpath, protgz + ".pdb.gz"), 'rb') as f_in:
+            with open(path.join(inputpath, protgz + ".pdb"), 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        ps.align(inputpath, outpath, protgz, threshold)
+        remove(path.join(inputpath, protgz + ".pdb"))
+
     for prot in names:
         log.info("")
         log.info("  Analyzing %s...", prot)
