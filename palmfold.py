@@ -1,3 +1,8 @@
+#!/bin/python3
+# palmfold
+#
+# RNA virus RdRp structural classifier.
+#
 from os import path, mkdir, listdir, rename, remove
 from sys import stderr
 
@@ -7,7 +12,7 @@ import logging as log
 
 class PalmStructs:
 
-    # Initialization Routine
+    # Initialization Routine ------------------------------
     # Ensures ./pol dir-tree is populated
     # with the correct files (palmprint pdb, pdb, fasta)
     def __init__(self, polpath):
@@ -84,10 +89,10 @@ class PalmStructs:
 
         self.all_domains = self.rdrps + self.xdxps
 
-    # Classification Routine
+    # Classification Routine ------------------------------
     # Runs TMalign of input against all palmprint pdb
     # Extracts scores and re-aligns if a RdRp palmprint detected
-    def align(self, pdbpath, name, out_tsv, tm_threshold):
+    def align(self, pdbpath, outpath, name, tm_threshold):
         # TODO: this looks like an inefficient way to find files in path
         # it introduces a bug where two files "ABC.pdb" and "ABCD.pdb" will
         # have the same start and endings, and cause multiple returns and skip
@@ -100,6 +105,13 @@ class PalmStructs:
             log.warning("Multiple <input>.pdb files found for %s", name)
             log.warning("Abiguous situation, skip molecule")
             return
+
+        # Define input/output files
+        out_name = path.join(outpath, path.splitext(pdb_file[0])[0])
+        out_tsv = path.join(out_name + ".tm")
+        out_ppfa = path.join(out_name + ".pp.fa")
+        out_rcfa = path.join(out_name + ".rc.fa")
+        out_rpdb = path.join(out_name + "_realigned.pdb")
         pdb_file = path.join(pdbpath, pdb_file[0])
 
         # Reset maximum scores observed
@@ -187,32 +199,42 @@ class PalmStructs:
                 with open(f"{pdb_file}.tmp", "w") as output:
                     subprocess.run(realign_cmd.split(" "), stdout=output)
 
-                log.info("  Re-aligning:")
+                # Move the realign
+                rename(f"{pdb_file}_tmpalign.pdb", f"{out_rpdb}")
 
-                # Get the realign
-                rename(f"{pdb_file}_tmpalign.pdb", f"{pdb_file}_realign.pdb")
-
-                # Get the fastas
+                # Run palmgrab.py to sub-select palmprint/core fasta seq
+                log.info("")
+                log.info("  Run palmgrab.py to extract sub-sequence fasta")
+                log.info("  cmd:")
                 scriptdir = path.dirname(path.realpath(__file__))
-                subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{pdb_file}.pp.fa", f"{pdb_file}.rc.fa"])
+                log.info('  python3 ' + path.join(scriptdir, "palmgrab.py ") + f"{pdb_file}.tmp " + f"{out_ppfa} " + f"{out_rcfa}")
+
+                subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{out_ppfa}", f"{out_rcfa}"])
+                log.info("  done")
+                log.info("")
                 for f in listdir(pdbpath):
                     if "_tmpalign" in f:
                         remove(path.join(pdbpath, f))
                 remove(f"{pdb_file}.tmp")
-                #remove(pdb_file)
             else:
                 # TODO: Add secondary output flag to include re-aligned XdXp outputs
                 log.info("  %s classified as non-RdRp polymerase", name)
 
 
-
-# Initialization routine ==================================
-def main(inputpath, palmprints, threshold):
+# Initialization Routine ==================================
+def main(inputpath, outpath, palmprints, threshold):
     # Verify Input Path exists
     if not path.exists(inputpath):
         log.error("The input directory %s does not exist", inputpath)
         exit(1)
 
+    # Verify Output Path exists
+    if not path.exists(outpath):
+        log.info("Output directory %s does not exist. Creating", outpath)
+        mkdir(outpath)
+    else:
+        log.info("Output directory %s exists. Overwriting", outpath)
+        
     # Extract protein filenames
     # TODO add support for .pdb and .pdb.gz files (gzip compatibility)
     names = [filename[:-4] for filename in listdir(inputpath) if filename.endswith(".pdb")]
@@ -230,7 +252,7 @@ def main(inputpath, palmprints, threshold):
     for prot in names:
         log.info("")
         log.info("  Analyzing %s...", prot)
-        ps.align(inputpath, prot, path.join(inputpath, f"{prot}.tm"), threshold)
+        ps.align(inputpath, outpath, prot, threshold)
 
 # Help / Argument Parsing =================================
 if __name__ == "__main__":
@@ -248,7 +270,7 @@ if __name__ == "__main__":
     ## TODO: implement output directory
     parser.add_argument(
         '--outpath', '-o', type=str, default='./out',
-        help='TODO: Output directory into which output files are created. [./out]'
+        help='Directory for writing output files. [./out]'
         )
     parser.add_argument(
         '--threshold', '-t', type=float, default=0.5,
@@ -277,6 +299,6 @@ if __name__ == "__main__":
      =========================================
     ''')
 
-    main(args.inputpath, args.palmprints, args.threshold)
+    main(args.inputpath, args.outpath, args.palmprints, args.threshold)
     log.info("")
-    log.info("palmfold run completed successfully")
+    log.info("palmfold run completed successfully!")
