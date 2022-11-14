@@ -185,42 +185,42 @@ class PalmStructs:
         log.info("")
 
         # RdRp classification
-        # RdRp TMscore above threshold
-        # and RdRp > XdXp model scores
+        # RdRp TMscore above re-alignment threshold
         if max(max_rdrp_score, max_xdxp_score) >= tm_threshold:
-            log.info("  + Polymerase threshold score reached: %s", tm_threshold)
+            log.info("  + Polymerase re-alignment threshold score reached: %s", tm_threshold)
             if max_rdrp_score > max_xdxp_score:
                 # RdRp+ classification
                 log.info("  ++ RdRp-classification for %s", name)
-                log.info("")
-                log.info("  Re-aligning:")
-
-                # Run TMalign to re-align input structure to top-RdRp palmprint
-                realign_cmd = f"TMalign -outfmt 1 {pdb_file} {path.join(self.polpath, 'palmprint', f'{domain}.pdb')} -o {pdb_file}_tmpalign"
-                log.info("  %s", realign_cmd)
-                with open(f"{pdb_file}.tmp", "w") as output:
-                    subprocess.run(realign_cmd.split(" "), stdout=output)
-
-                # Move the realign
-                rename(f"{pdb_file}_tmpalign.pdb", f"{out_rpdb}")
-
-                # Run palmgrab.py to sub-select palmprint/core fasta seq
-                log.info("")
-                log.info("  Run palmgrab.py to extract sub-sequence fasta")
-                log.info("  cmd:")
-                scriptdir = path.dirname(path.realpath(__file__))
-                log.info('  python3 ' + path.join(scriptdir, "palmgrab.py ") + f"{pdb_file}.tmp " + f"{out_ppfa} " + f"{out_rcfa}")
-
-                subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{out_ppfa}", f"{out_rcfa}"])
-                log.info("  done")
-                log.info("")
-                for f in listdir(pdbpath):
-                    if "_tmpalign" in f:
-                        remove(path.join(pdbpath, f))
-                remove(f"{pdb_file}.tmp")
             else:
-                # TODO: Add secondary output flag to include re-aligned XdXp outputs
                 log.info("  %s classified as non-RdRp polymerase", name)
+
+            log.info("")
+            log.info("  Re-aligning:")
+
+            # Run TMalign to re-align input structure to top-RdRp palmprint
+            realign_cmd = f"TMalign -outfmt 1 {pdb_file} {path.join(self.polpath, 'palmprint', f'{domain}.pdb')} -o {pdb_file}_tmpalign"
+            log.info("  %s", realign_cmd)
+            with open(f"{pdb_file}.tmp", "w") as output:
+                subprocess.run(realign_cmd.split(" "), stdout=output)
+
+            # Move the realign
+            rename(f"{pdb_file}_tmpalign.pdb", f"{out_rpdb}")
+
+            # Run palmgrab.py to sub-select palmprint/core fasta seq
+            log.info("")
+            log.info("  Run palmgrab.py to extract sub-sequence fasta")
+            log.info("  cmd:")
+            scriptdir = path.dirname(path.realpath(__file__))
+            log.info('  python3 ' + path.join(scriptdir, "palmgrab.py ") + f"{pdb_file}.tmp " + f"{out_ppfa} " + f"{out_rcfa}")
+
+            subprocess.run(['python3', path.join(scriptdir, "palmgrab.py"), f"{pdb_file}.tmp", f"{out_ppfa}", f"{out_rcfa}"])
+            log.info("  done")
+            log.info("")
+
+            for f in listdir(pdbpath):
+                if "_tmpalign" in f:
+                    remove(path.join(pdbpath, f))
+            remove(f"{pdb_file}.tmp")
 
 
 # Initialization Routine ==================================
@@ -250,10 +250,13 @@ def main(inputpath, outpath, palmprints, threshold):
         if filename.endswith(".pdb.gz")
     ]
 
+    log.info(" %s %s", names, namesgz)
+
     # Verify Input Path contains PDB files
-    if not names and namesgz:
-        log.error("Input directory %s doesn't contain any .pdb(.gz) files.", inputpath)
-        exit(1)
+    if not names:
+        if not namesgz:
+            log.error("Input directory %s doesn't contain any .pdb(.gz) files.", inputpath)
+            exit(1)
     
     # Create the Palmprint datastructure
     log.info("Initializing palmfold...")
@@ -294,8 +297,8 @@ if __name__ == "__main__":
         help='Directory for writing output files. [./out]'
         )
     parser.add_argument(
-        '--threshold', '-t', type=float, default=0.5,
-        help='Polymerase+ classification threshold for TMAlign. [0.5]'
+        '--threshold', '-t', type=float, default=0.4,
+        help='Polymerase+ re-alignment threshold for TMAlign. [0.4]'
         )
     parser.add_argument(
         '--verbose', '-v', action='store_true',
