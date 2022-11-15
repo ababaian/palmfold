@@ -1,0 +1,30 @@
+file	pdb	type	species	taxid	family	famid	phyla	phyid
+1hhs_A-cyst	1HHS	rdrp	Pseudomonas virus phi6	10879	cystoviridae	10877	duplorna	2732405
+1nb7_A-hepc	1NB7	rdrp	Hepacivirus C	11103	flaviviridae	11050	kitrino	2732406
+2cjq_A-pest	2CJQ	rdrp	Bovine viral diarrhea virus 1	11099	flaviviridae	11050	kitrino	2732406
+2ijd_2-poli	2IJD	rdrp	Human poliovirus 1	12080	picornaviridae	12058	pisu	2732408
+3avt_A-qbta	3AVT	rdrp	Escherichia virus Qbeta	2789016	fiersviridae	2842319	lena	2732407
+3bso_A-noro	3BSO	rdrp	Norwalk virus	11983	caliciviridae	11974	pisu	2732408
+3mmp_G-qbta	3MMP	rdrp	Escherichia virus Qbeta	2789016	fiersviridae	2842319	lena	2732407
+3zed_A-birv	3ZED	rdrp	Infectious pancreatic necrosis virus	11002	birnaviridae	10993	duplorna	2732405
+4ieg_A-cyst	4IEG	rdrp	Pseudomonas phage phi12	161736	cystoviridae	10877	duplorna	2732405
+4q7j_G-qbta	4Q7J	rdrp	Escherichia virus Qbeta	2789016	fiersviridae	2842319	lena	2732407
+4xha_A-tavp	4XHA	rdrp	Thosea asigna virus	83810	permutotetraviridae	1283210	unc	439490
+5amr_A-buny	5AMR	rdrp	La Crosse virus	11577	bunyaviridae	1980416	negarna	2497569
+5ccv_A-flav	5CCV	rdrp	Dengue virus	12637	flaviviridae	11050	kitrino	2732406
+6klc_A-aren	6KLC	rdrp	Lassa mammarenavirus	11620	arenaviridae	11617	negarna	2497569
+6l42_A-sfts	6L42	rdrp	Phlebovirus WCH/97/HN/China/2011	1173018	phenuiviridae	1980418	negarna	2497569
+6po2_A-reov	6PO2	rdrp	Bluetongue virus 1	40051	sedoreoviridae	2946186	duplorna	2732405
+6r1i_A-pico	6R1I	rdrp	Aichivirus C	1298633	picornaviridae	12058	pisu	2732408
+6ty8_A-bcpv	6TY8	rdrp	Cypovirus 1	205895	spinareoviridae	2946187	duplorna	2732405
+6u5o_L-mono	6U5O	rdrp	Human metapneumovirus	162145	pneumoviridae	11244	negarna	2497569
+7c2k_A-coro	7C2K	rdrp	Severe acute respiratory syndrome coronavirus 2	2697049	coronaviridae	11118	pisu	2732408
+2ajq_A-t7dp	2AJQ	dddp	Escherichia phage T7	10760	autographiviridae	2731643	duplodna	2731341
+2gv9_B-dsdn	2GV9	dddp	Human alphaherpesvirus 1	10298	herpesviridae	10292	duplodna	2731341
+6n9x_H-t7dp	6N9X	dddp	Escherichia phage T7	10760	autographiviridae	2731643	duplodna	2731341
+1s77_D-t7rp	1S77	ddrp	Escherichia phage T7	10760	autographiviridae	2731643	duplodna	2731341
+3du5_A-tert	3DU5	rt	Tribolium castaneum	7070	tenebrionidae	7065	arthropoda	6656
+3jb9_A-splc	3JB9	rt	Schizosaccharomyces pombe	4896	schizosaccharomycetaceae	4894	ascomycota	4890
+4hkq_A-rddp	4HKQ	rt	Xenotropic MuLV-related virus VP62	373193	retroviridae	11632	artver	2732409
+4ol8_A-rddp	4OL8	rt	Saccharomyces cerevisiae	4932	schizosaccharomycetaceae	4894	ascomycota	4890
+6ar3_A-g2rt	6AR3	rt	Geobacillus stearothermophilus	1422	bacillaceae	186817	firmicutes	1239
