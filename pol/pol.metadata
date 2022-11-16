@@ -1,4 +1,4 @@
-file	pdb	type	species	taxid	family	famid	phyla	phyid
+pdb	pdbid	type	species	taxid	family	famid	phyla	phyid
 1hhs_A-cyst	1HHS	rdrp	Pseudomonas virus phi6	10879	cystoviridae	10877	duplorna	2732405
 1nb7_A-hepc	1NB7	rdrp	Hepacivirus C	11103	flaviviridae	11050	kitrino	2732406
 2cjq_A-pest	2CJQ	rdrp	Bovine viral diarrhea virus 1	11099	flaviviridae	11050	kitrino	2732406
