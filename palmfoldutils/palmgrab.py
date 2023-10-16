@@ -1,21 +1,21 @@
-import os
 import sys
-import glob
 from Bio import SeqIO
 from Bio.Seq import Seq
-from Bio.SeqIO import FastaIO
 from Bio.SeqRecord import SeqRecord
-
-def palmgrab(inputfa, palmout, rdrpout) :
+from pathlib import Path
+def palmgrab(inputfa:Path, palmout:Path, rdrpout:Path) :
+    inputfa=Path(inputfa) #for compatibility
+    palmout=Path(palmout)
+    rdrpout=Path(rdrpout)
     PfinList = [] # palmprint fasta
     RfinList = [] # rdrpcore  fasta
     # Resulttrunc.append(SeqRecord(Seq(splitseq), id=name))
-    if os.path.exists(inputfa):
+    if inputfa.is_file():
         #for input in glob.glob(os.path.join(os.path.join(inputfa,'tmfa'),'*.fa')) :
         # Import 2 TMalign fasta output
         seqList = []
         fasta_sequences = SeqIO.parse(open(inputfa), 'fasta')
-        pdb_id = os.path.basename(inputfa.split('.fa')[0])
+        pdb_id = inputfa.stem #os.path.basename(inputfa.split('.fa')[0])
 
         for fasta in fasta_sequences:
             name, sequence = fasta.id, str(fasta.seq)
